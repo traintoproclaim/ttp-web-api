@@ -132,30 +132,40 @@ class SendmailMessage extends GameMessage
 		mysql_select_db("traintoproclaim") or die(mysql_error());
 
 		$email     = $_REQUEST["email"];
-      		$subject   = $_REQUEST["sub"];
+		$subject   = $_REQUEST["sub"];
 		$name      = $_REQUEST["name"];
-		$ccemail     = $_REQUEST["ccemail"];
+		$ccemail   = $_REQUEST["ccemail"];
 		
+		// Check for existing email
+		$sql = "SELECT id FROM email_sent WHERE email='$email' AND subject='$subject'";
+		$result = mysql_query($sql);
+		if ($result !== FALSE) {
+			if (mysql_num_rows($result) > 0) {
+				DebugLog("BUG: Duplicate email attempt to $email subject ($subject)");
+				return;
+			}
+		} else {
+			DebugLog(mysql_error());
+		}
 		
-		$resultXML = '<?xml version="1.0" encoding="UTF-8" ?> ';
+		$resultXML  = '<?xml version="1.0" encoding="UTF-8" ?> ';
 		$resultXML .= "<Response>";	
-				
+		
 		$from ='responses@traintoproclaim.com';
 		$bcc  ='responses@traintoproclaim.com';	
-		$xheaders = "";
+		$xheaders  = "";
 		$xheaders .= "From: <$from>\n";
 		$xheaders .= "Bcc: <$bcc>\n";
-		if($ccemail!='') $xheaders .= "Cc: <$ccemail>\n";
+		if ($ccemail != '') $xheaders .= "Cc: <$ccemail>\n";
 		$xheaders .= "X-Sender: <$from>\n";
 		$xheaders .= "X-Mailer: PHP\n";
 		$xheaders .= "X-Priority: 1\n"; 
 		$xheaders .= "Content-Type:text/html; charset=\"iso-8859-1\"\n";
-                $xheaders .= "Reply-To: <$from>\r\n";
-                $xheaders .= "Return-Path: <$from>\r\n";
+		$xheaders .= "Reply-To: <$from>\r\n";
+		$xheaders .= "Return-Path: <$from>\r\n";
 
-				
 		$to  = $email;
-			
+		
 		if($subject=='1')
 		{
 		$subject = $name.' '.'- give it some thought';
@@ -239,14 +249,21 @@ Click here </a> to view or download a free e-book with some more info on the sev
 		}
 		else
 		{
-			$response['Response'] = 'Success';
-//			$response['Response'] = 'Error';
-		        echo (json_encode($response));
-		        return;
+//			$response['Response'] = 'Success';
+			$response['Response'] = 'Error';
+			echo (json_encode($response));
+			return;
+		}
+		
+		// Insert a record into the database
+		$ip = $_SERVER['REMOTE_ADDR'];
+		$client = $_SERVER['HTTP_USER_AGENT'];
+		$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES ('NOW()', '$email', '$subject', '$ip', '$client')";
+		$result = mysql_query($sql);
+		if ($result !== TRUE) {
+			DebugLog(mysql_error());
 		}
 
- 	       
-                           
 	}
 }
 $messageList['Sendmail'] = "SendmailMessage";
