@@ -33,37 +33,6 @@ var execute = function(command, options, callback) {
   }
 };
 
-var start_server = function(options, cb) {
-  var child = child_process.spawn(options.command, options.arguments, {
-    detached: true,
-    cwd: process.cwd,
-    env: process.env,
-    stdio: ['pipe', 'pipe', 'pipe']
-//    stdio: ['ignroe', process.stdout, process.stderr]
-//    stdio: ['ignore', 'pipe', 'pipe']
-  });
-
-  child.once('close', cb);
-  child.unref();
-
-  if (child.stdout) child.stdout.on('data', function(data) {
-//    gutil.log(gutil.colors.yellow('boo '));
-    gutil.log(gutil.colors.yellow(data));
-//    console.log(data);
-    var sentinal = options.sentinal;
-    if (data.toString().indexOf(sentinal) != -1) {
-      cb(null, child);
-    }
-  });
-  if (child.stderr) child.stderr.on('data', function(data) {
-    gutil.log(gutil.colors.red(data));
-    var sentinal = options.sentinal;
-    if (data.toString().indexOf(sentinal) != -1) {
-      cb(null, child);
-    }
-  });
-};
-
 var paths = {
   src: ['htdocs/**/*.inc', 'htdocs/**/*.php', '!htdocs/vendor/**'],
   testE2E: ['tests/e2e/**/*.js'],
@@ -96,11 +65,25 @@ gulp.task('upload', function(cb) {
   var options = {
     dryRun: false,
     silent : false,
-    src : "src",
+    src : "src/",
     dest : "root@traintoproclaim.com:/var/www/virtual/traintoproclaim.com/html/htdocs/gospel/"
   };
   execute(
-    'rsync -rzlt --chmod=Dug=rwx,Fug=rw,o-rwx --delete --exclude-from="upload-exclude.txt" --stats --rsync-path="sudo -u vu2006 rsync" --rsh="ssh" <%= src %>/ <%= dest %>',
+    'rsync -rzlt --chmod=Dug=rwx,Fug=rw,o-rwx --delete --exclude-from="upload-exclude.txt" --stats --rsync-path="sudo -u vu2010 rsync" --rsh="ssh" <%= src %> <%= dest %>',
+    options,
+    cb
+  );
+});
+
+gulp.task('download', function(cb) {
+  var options = {
+    dryRun: false,
+    silent : false,
+    dest : "src/",
+    src : "root@traintoproclaim.com:/var/www/virtual/traintoproclaim.com/html/htdocs/gospel/"
+  };
+  execute(
+    'rsync -rzlt --delete --stats --rsync-path="sudo -u vu2010 rsync" --rsh="ssh" <%= src %> <%= dest %>',
     options,
     cb
   );
