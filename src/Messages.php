@@ -248,7 +248,7 @@ Click here </a> to view or download a free e-book with some more info on the sev
 			// Insert a record into the database
 			$ip = $_SERVER['REMOTE_ADDR'];
 			$client = $_SERVER['HTTP_USER_AGENT'];
-			$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES ('NOW()', '$email', '$subject', '$ip', '$client')";
+			$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES (NOW(), '$email', '$subject', '$ip', '$client')";
 			$result = mysql_query($sql);
 			if ($result !== TRUE) {
 				DebugLog(mysql_error());
