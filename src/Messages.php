@@ -244,26 +244,22 @@ Click here </a> to view or download a free e-book with some more info on the sev
 		if(mail( $to,$subject, $msg,$xheaders))
 		{
 			$response['Response'] = 'Success';
-		        echo (json_encode($response));
-		        return;
-		}
-		else
-		{
+			echo (json_encode($response));
+			// Insert a record into the database
+			$ip = $_SERVER['REMOTE_ADDR'];
+			$client = $_SERVER['HTTP_USER_AGENT'];
+			$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES ('NOW()', '$email', '$subject', '$ip', '$client')";
+			$result = mysql_query($sql);
+			if ($result !== TRUE) {
+				DebugLog(mysql_error());
+			}
+		} else {
 //			$response['Response'] = 'Success';
 			$response['Response'] = 'Error';
+			DebugLog("Mail Failure: To '$to'");
 			echo (json_encode($response));
-			return;
 		}
 		
-		// Insert a record into the database
-		$ip = $_SERVER['REMOTE_ADDR'];
-		$client = $_SERVER['HTTP_USER_AGENT'];
-		$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES ('NOW()', '$email', '$subject', '$ip', '$client')";
-		$result = mysql_query($sql);
-		if ($result !== TRUE) {
-			DebugLog(mysql_error());
-		}
-
 	}
 }
 $messageList['Sendmail'] = "SendmailMessage";
