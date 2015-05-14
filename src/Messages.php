@@ -132,16 +132,16 @@ class SendmailMessage extends GameMessage
 		mysql_select_db("traintoproclaim") or die(mysql_error());
 
 		$email     = $_REQUEST["email"];
-		$subject   = $_REQUEST["sub"];
+		$subjectId = $_REQUEST["sub"];
 		$name      = $_REQUEST["name"];
 		$ccemail   = $_REQUEST["ccemail"];
 		
 		// Check for existing email
-		$sql = "SELECT id FROM email_sent WHERE email='$email' AND subject='$subject'";
+		$sql = "SELECT id FROM email_sent WHERE email='$email' AND subject='$subjectId'";
 		$result = mysql_query($sql);
-		if ($result !== FALSE) {
+		if ($result) {
 			if (mysql_num_rows($result) > 0) {
-				DebugLog("BUG: Duplicate email attempt to $email subject ($subject)");
+				DebugLog("BUG: Duplicate email attempt to $email subject ($subjectId)");
 				return;
 			}
 		} else {
@@ -166,7 +166,7 @@ class SendmailMessage extends GameMessage
 
 		$to  = $email;
 		
-		if($subject=='1')
+		if($subjectId=='1')
 		{
 		$subject = $name.' '.'- give it some thought';
 		$msg="<html>
@@ -181,7 +181,7 @@ class SendmailMessage extends GameMessage
 			</html>";
 		}
 		
-		if($subject=='2')
+		if($subjectId=='2')
 		{
 		$subject = $name.' '.'- time to explore it further';
 		$msg="<html>
@@ -196,7 +196,7 @@ class SendmailMessage extends GameMessage
 			</html>";
 		}
 
-		if($subject=='3')
+		if($subjectId=='3')
 		{
 		$subject = $name.' '.'- you have made the best decision of your life!';
 		$msg="<html>
@@ -211,7 +211,7 @@ class SendmailMessage extends GameMessage
 			</html>";
 		}
 
-		if($subject=='4')
+		if($subjectId=='4')
 		{
 		$subject = $name.' '.'- you are almost there';
 		$msg="<html>
@@ -227,7 +227,7 @@ Click here </a> to view or download a free e-book with some more info on the sev
 			</html>";
 		}
 
-		if($subject=='5')
+		if($subjectId=='5')
 		{
 		$subject = $name.' '.'- here is the info you requested';
 		$msg="<html>
@@ -248,7 +248,7 @@ Click here </a> to view or download a free e-book with some more info on the sev
 			// Insert a record into the database
 			$ip = $_SERVER['REMOTE_ADDR'];
 			$client = $_SERVER['HTTP_USER_AGENT'];
-			$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES (NOW(), '$email', '$subject', '$ip', '$client')";
+			$sql = "INSERT INTO email_sent (dtc, email, subject, ip, client) VALUES (NOW(), '$email', '$subjectId', '$ip', '$client')";
 			$result = mysql_query($sql);
 			if ($result !== TRUE) {
 				DebugLog(mysql_error());
